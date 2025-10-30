@@ -1,0 +1,8 @@
+---
+
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart: always
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/homeassistant:/config:z

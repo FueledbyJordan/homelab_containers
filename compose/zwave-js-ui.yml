@@ -1,0 +1,12 @@
+services:
+  zwave-js-ui:
+    image: zwavejs/zwave-js-ui:latest
+    restart: always
+    tty: true
+    stop_signal: SIGINT
+    environment:
+      SESSION_SECRET: ${ZWAVEJS_SESSION_SECRET}
+    devices:
+      - /dev/serial/by-id/usb-Zooz_800_Z-Wave_Stick_533D004242-if00:/dev/zwave
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/zwavejs:/usr/src/app/store:z

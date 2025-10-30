@@ -1,0 +1,279 @@
+---
+
+services:
+  grafana:
+    image: grafana/grafana-enterprise:latest
+    restart: unless-stopped
+    environment:
+      GF_INSTALL_PLUGINS: grafana-clock-panel
+      GF_SECURITY_ADMIN_USER: ${GF_SECURITY_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+    configs:
+      - source: grafana_provisioning
+        target: /etc/grafana/provisioning/provisioning.yaml
+      - source: grafana_victoriametrics_datasource
+        target: /etc/grafana/provisioning/datasources/victoriametrics.yaml
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/grafana:/var/lib/grafana:z
+
+  # dashboards cannot be dynamically fetched and updated, so we need to manage this via terraform
+  terraform-grafana:
+    image: hashicorp/terraform:1.13
+    restart: no
+    depends_on:
+      - grafana
+    environment:
+      GRAFANA_AUTH: ${GF_SECURITY_ADMIN_USER}:${GF_SECURITY_ADMIN_PASSWORD}
+    working_dir: /workspace
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/terraform-grafana:/workspace:z
+    configs:
+      - source: terraform_main
+        target: /workspace/main.tf
+      - source: terraform_entrypoint
+        target: /entrypoint.sh
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+
+configs:
+  grafana_provisioning:
+    content: |
+      prune: true
+
+  grafana_victoriametrics_datasource:
+    content: |
+      apiVersion: 1
+
+      datasources:
+          - name: VictoriaMetrics
+            type: prometheus
+            access: proxy
+            url: http://victoriametrics:8428
+            isDefault: true
+            jsonData:
+              prometheusType: Prometheus
+              prometheusVersion: 2.24.0
+
+  terraform_main:
+    content: |
+      terraform {
+        required_providers {
+          grafana = {
+            source  = "grafana/grafana"
+            version = "~> 3.0"
+          }
+        }
+      }
+
+      provider "grafana" {
+        url  = "http://grafana:3000"
+        auth = var.grafana_auth
+      }
+
+      variable "grafana_auth" {
+        type        = string
+        description = "Grafana admin credentials in format 'user:password'"
+        sensitive   = true
+      }
+
+      data "grafana_data_source" "victoriametrics" {
+        name = "VictoriaMetrics"
+      }
+
+      data "grafana_data_source" "victorialogs" {
+        name = "VictoriaLogs"
+      }
+
+      data "http" "victoriametrics" {
+        url = "https://grafana.com/api/dashboards/10229/revisions/latest/download"
+      }
+
+      data "http" "vmagent" {
+        url = "https://grafana.com/api/dashboards/12683/revisions/latest/download"
+      }
+
+      data "http" "vmalert" {
+        url = "https://grafana.com/api/dashboards/14950/revisions/latest/download"
+      }
+
+      data "http" "node-exporter" {
+        url = "https://grafana.com/api/dashboards/1860/revisions/latest/download"
+      }
+
+      data "http" "docker" {
+        url = "https://grafana.com/api/dashboards/15798/revisions/latest/download"
+      }
+
+      data "http" "victorialogs" {
+        url = "https://grafana.com/api/dashboards/22084/revisions/latest/download"
+      }
+
+      data "http" "caddy" {
+        url = "https://grafana.com/api/dashboards/22870/revisions/latest/download"
+      }
+
+      data "http" "unpoller_sites" {
+        url = "https://grafana.com/api/dashboards/11311/revisions/latest/download"
+      }
+
+      data "http" "unpoller_usw" {
+        url = "https://grafana.com/api/dashboards/11312/revisions/latest/download"
+      }
+
+      data "http" "unpoller_usg" {
+        url = "https://grafana.com/api/dashboards/11313/revisions/latest/download"
+      }
+
+      data "http" "unpoller_uap" {
+        url = "https://grafana.com/api/dashboards/11314/revisions/latest/download"
+      }
+
+      data "http" "unpoller_clients" {
+        url = "https://grafana.com/api/dashboards/11315/revisions/latest/download"
+      }
+
+      data "http" "blackbox" {
+        url = "https://grafana.com/api/dashboards/13659/revisions/latest/download"
+      }
+
+      resource "grafana_folder" "victoriametrics" {
+        title = "victoriametrics"
+      }
+
+      resource "grafana_folder" "unifi" {
+        title = "unifi"
+      }
+
+      resource "grafana_dashboard" "victoriametrics" {
+        folder = grafana_folder.victoriametrics.id
+        config_json = data.http.victoriametrics.response_body
+        overwrite   = true
+      }
+
+      resource "grafana_dashboard" "vmagent" {
+        folder = grafana_folder.victoriametrics.id
+        config_json = data.http.vmagent.response_body
+        overwrite   = true
+      }
+
+      resource "grafana_dashboard" "vmalert" {
+        folder = grafana_folder.victoriametrics.id
+        config_json = data.http.vmalert.response_body
+        overwrite   = true
+      }
+
+      resource "grafana_dashboard" "node-exporter" {
+        config_json = data.http.node-exporter.response_body
+        overwrite   = true
+      }
+
+      resource "grafana_dashboard" "docker" {
+        config_json = replace(
+          data.http.docker.response_body,
+          "\"uid\": \"$$$${DS_GRAFANACLOUD-SHIZUN-PROM}\"",
+          "\"uid\": \"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "victorialogs" {
+        config_json = data.http.victorialogs.response_body
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "caddy" {
+        config_json = replace(
+          data.http.caddy.response_body,
+          "\"uid\": \"$$$${DS_PROMETHEUS}\"",
+          "\"uid\": \"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "unpoller_sites" {
+        folder = grafana_folder.unifi.id
+        config_json = replace(
+          data.http.unpoller_sites.response_body,
+          "\"$$$${DS_PROMETHEUS}\"",
+          "\"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "unpoller_usw" {
+        folder = grafana_folder.unifi.id
+        config_json = replace(
+          data.http.unpoller_usw.response_body,
+          "\"$$$${DS_PROMETHEUS}\"",
+          "\"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "unpoller_usg" {
+        folder = grafana_folder.unifi.id
+        config_json = replace(
+          data.http.unpoller_usg.response_body,
+          "\"$$$${DS_PROMETHEUS}\"",
+          "\"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "unpoller_uap" {
+        folder = grafana_folder.unifi.id
+        config_json = replace(
+          data.http.unpoller_uap.response_body,
+          "\"$$$${DS_PROMETHEUS}\"",
+          "\"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "unpoller_clients" {
+        folder = grafana_folder.unifi.id
+        config_json = replace(
+          data.http.unpoller_clients.response_body,
+          "\"$$$${DS_PROMETHEUS}\"",
+          "\"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+      resource "grafana_dashboard" "blackbox" {
+        config_json = replace(
+          data.http.blackbox.response_body,
+          "\"$$$${DS_PROMETHEUS}\"",
+          "\"$${data.grafana_data_source.victoriametrics.uid}\""
+        )
+        overwrite = true
+      }
+
+  terraform_entrypoint:
+    content: |
+      #!/bin/sh
+      set -e
+
+      echo "Waiting for Grafana to be ready..."
+      MAX_RETRIES=30
+      RETRY_COUNT=0
+      SLEEP_INTERVAL=5
+
+      until wget --spider --quiet http://grafana:3000/api/health 2>/dev/null; do
+        RETRY_COUNT=$$((RETRY_COUNT + 1))
+        if [ $$RETRY_COUNT -ge $$MAX_RETRIES ]; then
+          echo "ERROR: Grafana failed to become ready after $$MAX_RETRIES attempts ($$(($$MAX_RETRIES * $$SLEEP_INTERVAL)) seconds)"
+          exit 1
+        fi
+        echo "Grafana not ready yet, waiting... (attempt $$RETRY_COUNT/$$MAX_RETRIES)"
+        sleep $$SLEEP_INTERVAL
+      done
+      echo "Grafana is ready!"
+
+      # Initialize Terraform
+      terraform init
+
+      # Apply configuration
+      terraform apply -auto-approve \
+        -var="grafana_auth=$${GRAFANA_AUTH}"
+
+      echo "Dashboards provisioned successfully!"

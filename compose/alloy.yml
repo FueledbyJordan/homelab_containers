@@ -1,0 +1,69 @@
+---
+
+services:
+
+  alloy:
+    image: grafana/alloy:v1.11.3
+    restart: always
+    user: 0:0
+    configs:
+      - source: config_alloy
+        target: /etc/config.alloy
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro,z
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - "run"
+      - "--server.http.listen-addr=0.0.0.0:12345"
+      - "--storage.path=/var/lib/alloy/data"
+      - "/etc/config.alloy"
+    depends_on:
+      victorialogs:
+        condition: service_healthy
+      victoriametrics:
+        condition: service_healthy
+    security_opt:
+      - label=disable
+
+
+configs:
+  config_alloy:
+    content: |
+      discovery.docker "default" {
+        host             = "unix:///var/run/docker.sock"
+        refresh_interval = "5s"
+      }
+
+      discovery.relabel "default" {
+        targets = discovery.docker.default.targets
+        rule {
+          source_labels = ["__meta_docker_container_name"]
+          target_label  = "container_name"
+        }
+      }
+
+      prometheus.exporter.self "default" {}
+
+      prometheus.scrape "default" {
+        targets    = prometheus.exporter.self.default.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.remote_write "default" {
+        endpoint {
+          url = "http://victoriametrics:8428/api/v1/write"
+        }
+      }
+
+      loki.write "default" {
+        endpoint {
+          headers = { "VL-Msg-Field" = "msg", "VL-Stream-Fields" = "container_name" }
+          url = "http://victorialogs:9428/insert/loki/api/v1/push"
+        }
+      }
+
+      loki.source.docker "default" {
+        host       = "unix:///var/run/docker.sock"
+        targets    = discovery.relabel.default.output
+        forward_to = [loki.write.default.receiver]
+      }

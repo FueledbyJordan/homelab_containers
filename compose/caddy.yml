@@ -1,0 +1,223 @@
+services:
+  caddy:
+    build: ../images/caddy
+    restart: always
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/caddy:/data:z
+    ports:
+      - 80:80
+      - 443:443
+    configs:
+      - source: caddyfile
+        target: /etc/Caddyfile
+    environment:
+      CF_API_TOKEN: ${CF_API_TOKEN}
+    entrypoint:
+      - 'caddy'
+    command:
+      - 'run'
+      - '--config=/etc/Caddyfile'
+      - '--adapter=caddyfile'
+
+configs:
+  caddyfile:
+    content: |
+      {
+        metrics {
+          per_host
+        }
+      }
+
+      (proxy_service) {
+        reverse_proxy {args[0]} {
+          header_up Host {host}
+          header_up X-Real-IP {remote}
+          header_up X-Forwarded-For {remote}
+          header_up X-Forwarded-Proto {scheme}
+        }
+        encode gzip
+      }
+
+      *.${INTERNAL_DOMAIN_NAME} {
+        tls {
+          dns cloudflare ${CF_API_TOKEN}
+        }
+
+        # Route to specific services
+        @alertmanager host alertmanager.${INTERNAL_DOMAIN_NAME}
+        handle @alertmanager {
+          import proxy_service alertmanager:9093
+        }
+
+        @grafana host grafana.${INTERNAL_DOMAIN_NAME}
+        handle @grafana {
+          import proxy_service grafana:3000
+        }
+
+        @homeassistant host homeassistant.${INTERNAL_DOMAIN_NAME}
+        handle @homeassistant {
+          reverse_proxy homeassistant:8123 {
+            header_up X-Forwarded-Proto {scheme}
+            header_up X-Forwarded-Host {host}
+          }
+        }
+
+        @jellyfin host jellyfin.${INTERNAL_DOMAIN_NAME}
+        handle @jellyfin {
+          import proxy_service jellyfin:8096
+        }
+
+        @victorialogs host victorialogs.${INTERNAL_DOMAIN_NAME}
+        handle @victorialogs {
+          import proxy_service victorialogs:9428
+        }
+
+        @victoriametrics host victoriametrics.${INTERNAL_DOMAIN_NAME}
+        handle @victoriametrics {
+          import proxy_service victoriametrics:8428
+        }
+
+        @vmalert host vmalert.${INTERNAL_DOMAIN_NAME}
+        handle @vmalert {
+          import proxy_service vmalert:8880
+        }
+
+        @zwave host zwave.${INTERNAL_DOMAIN_NAME}
+        handle @zwave {
+          import proxy_service zwave-js-ui:8091
+        }
+
+        handle {
+          reverse_proxy caddy-private:80 {
+            header_up Host {host}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto {scheme}
+          }
+        }
+      }
+
+      :80 {
+        @from_tailscale header X-Forwarded-Proto https
+        handle @from_tailscale {
+          @grafana header_regexp X-Forwarded-Host ^grafana.*\.ts\.net
+          handle @grafana {
+            reverse_proxy grafana:3000 {
+              header_up Host {header.X-Forwarded-Host}
+              header_up X-Real-IP {remote}
+              header_up X-Forwarded-For {remote}
+              header_up X-Forwarded-Proto https
+            }
+            encode gzip
+          }
+
+          @homeassistant header_regexp X-Forwarded-Host ^homeassistant.*\.ts\.net
+          handle @homeassistant {
+            reverse_proxy homeassistant:8123 {
+              header_up Host homeassistant.${INTERNAL_DOMAIN_NAME}
+              header_up X-Real-IP {remote_host}
+              header_up X-Forwarded-For {remote_host}
+              header_up X-Forwarded-Proto https
+              header_up X-Forwarded-Host {header.X-Forwarded-Host}
+            }
+            encode gzip
+          }
+    
+          map {header.X-Forwarded-Host} {backend} {
+            ~^alertmanager.*\.ts\.net alertmanager:9093
+            ~^jellyfin.*\.ts\.net jellyfin:8096
+            ~^victorialogs.*\.ts\.net victorialogs:9428
+            ~^victoriametrics.*\.ts\.net victoriametrics:8428
+            ~^vmalert.*\.ts\.net vmalert:8880
+            ~^zwave.*\.ts\.net zwave-js-ui:8091
+            default ""
+          }
+    
+          map {header.X-Forwarded-Host} {subdomain} {
+            ~^(vmalert|alertmanager|jellyfin|victorialogs|victoriametrics|zwave).*\.ts\.net $$1
+            default ""
+          }
+
+          reverse_proxy {backend} {
+            header_up Host {subdomain}.${INTERNAL_DOMAIN_NAME}
+            header_up X-Real-IP {remote}
+            header_up X-Forwarded-For {remote}
+            header_up X-Forwarded-Proto https
+            header_up X-Forwarded-Host {header.X-Forwarded-Host}
+          }
+          encode gzip
+        }
+
+        handle {
+          redir https://{host}{uri} permanent
+        }
+      }
+
+      :2019 {
+        handle /metrics {
+          metrics
+        }
+
+        handle /discovery/targets {
+          respond * `[
+            {
+              "targets": ["alertmanager.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "alertmanager",
+                "__health_path__": "/-/healthy"
+              }
+            },
+            {
+              "targets": ["grafana.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "grafana",
+                "__health_path__": "/api/health"
+              }
+            },
+            {
+              "targets": ["homeassistant.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "homeassistant",
+                "__health_path__": "/manifest.json"
+              }
+            },
+            {
+              "targets": ["jellyfin.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "jellyfin",
+                "__health_path__": "/health"
+              }
+            },
+            {
+              "targets": ["victorialogs.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "victorialogs",
+                "__health_path__": "/-/healthy"
+              }
+            },
+            {
+              "targets": ["victoriametrics.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "victoriametrics",
+                "__health_path__": "/-/healthy"
+              }
+            },
+            {
+              "targets": ["vmalert.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "vmalert",
+                "__health_path__": "/-/healthy"
+              }
+            },
+            {
+              "targets": ["zwave.${INTERNAL_DOMAIN_NAME}"],
+              "labels": {
+                "__meta_service": "zwave",
+                "__health_path__": "/health/",
+                "module": "http_2xx_accept_text_plain"
+              }
+            }
+          ]` 200
+          header Content-Type "application/json"
+        }
+      }

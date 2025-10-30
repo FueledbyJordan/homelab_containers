@@ -1,0 +1,31 @@
+---
+
+services:
+  journal-forwarder:
+    image: rockylinux:9
+    privileged: true
+    restart: always
+    volumes:
+      - /var/log/journal:/var/log/journal:ro
+      - /run/log/journal:/run/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - ${COMPOSE_ROOT_PATH}/journal-forwarder:/var/lib/systemd/journal-upload:z
+    configs:
+      - source: journal-upload-conf
+        target: /etc/systemd/journal-upload.conf
+    command: >
+      bash -c "
+        dnf install -y systemd-journal-remote &&
+        mkdir -p /var/lib/systemd/journal-upload &&
+        exec /usr/lib/systemd/systemd-journal-upload
+      "
+    depends_on:
+      victorialogs:
+        condition: service_healthy
+
+configs:
+  journal-upload-conf:
+    content: |
+      [Upload]
+      URL=http://victorialogs:9428/insert/journald
+

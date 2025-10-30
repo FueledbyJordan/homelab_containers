@@ -1,0 +1,57 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    configs:
+      - source: mosquitto_entrypoint
+        target: /bin/entrypoint.sh
+        mode: 0755
+      - source: mosquitto_conf
+        target: /mosquitto/config/mosquitto.conf
+    entrypoint: /bin/entrypoint.sh
+    secrets:
+      - mosquitto-zwave-js-ui-passwd
+      - mosquitto-home-assistant-passwd
+
+configs:
+  mosquitto_entrypoint:
+    content: |
+      #!/bin/sh
+      set -e
+
+      # Concatenate all secrets from /run/secrets/* into /etc/secrets
+      if [ -d /run/secrets ]; then
+          echo "Processing secrets from /run/secrets..."
+          > /etc/secrets
+    
+          for secret_file in /run/secrets/*; do
+              if [ -f "$$secret_file" ]; then
+                  echo "Adding secret: $(basename "$$secret_file")"
+                  cat "$$secret_file" >> /etc/secrets
+                  echo "" >> /etc/secrets
+              fi
+          done
+    
+          chmod 600 /etc/secrets
+          chown mosquitto:mosquitto /etc/secrets
+          echo "Secrets consolidated to /etc/secrets"
+      else
+          echo "No /run/secrets directory found, skipping secret processing"
+      fi
+
+      # Start mosquitto
+      echo "Starting mosquitto..."
+      exec /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
+
+  mosquitto_conf:
+    content: |
+      allow_anonymous false
+      password_file /etc/secrets
+      listener 1883 0.0.0.0
+
+secrets:
+  mosquitto-zwave-js-ui-passwd:
+    environment: MOSQUITTO_ZWAVE_JS_UI_PASSWD
+
+  mosquitto-home-assistant-passwd:
+    environment: MOSQUITTO_HOME_ASSISTANT_PASSWD

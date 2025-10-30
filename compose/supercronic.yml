@@ -1,0 +1,78 @@
+---
+services:
+
+  supercronic:
+    build: ../images/supercronic
+    restart: always
+    depends_on:
+      - homeassistant
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/homeassistant/backups:/homeassistant/backups:ro
+      - /var/backup/homeassistant:/homeassistant/offdisk_backups:z
+    configs:
+      - source: cronfile
+        target: /etc/cronfile
+      - source: backup_homeassistant
+        target: /usr/bin/backup_homeassistant
+        mode: 0755
+    secrets:
+      - homeassistant-repository
+      - homeassistant-aws-access-key
+      - homeassistant-aws-secret-key
+      - homeassistant-encryption-key
+
+
+configs:
+  cronfile:
+    content: |
+      0 10 * * * /usr/bin/backup_homeassistant
+
+  backup_homeassistant:
+    content: |
+      #!/bin/bash
+
+      set -euo pipefail
+      export AWS_ACCESS_KEY_ID=$$(cat /run/secrets/homeassistant-aws-access-key)
+      export AWS_SECRET_ACCESS_KEY=$$(cat /run/secrets/homeassistant-aws-secret-key)
+      export RESTIC_REPOSITORY_FILE="/run/secrets/homeassistant-repository"
+      export RESTIC_PASSWORD_FILE="/run/secrets/homeassistant-encryption-key"
+
+      WORKDIR="/tmp/homeassistant-backup"
+      mkdir -p "$${WORKDIR}"
+      cd "$${WORKDIR}"
+
+      echo "Starting Home Assistant backup process..."
+
+      echo "Cleaning up offdisk backups"
+      find /homeassistant/offdisk_backups -maxdepth 1 -mtime +6 -type f -delete
+
+      echo "Making off disk backup"
+      tarred_backup=$$(find /homeassistant/backups/ -type f -mtime -1 -iname "automatic*.tar")
+      cp "$${tarred_backup}" /homeassistant/offdisk_backups
+
+      cp "$${tarred_backup}" "$${WORKDIR}"
+      restic init || true
+
+      echo "Uploading backup..."
+      restic backup "$${WORKDIR}"
+      rm -rf "$${WORKDIR}"
+
+      echo "Pruning backups..."
+      restic forget --keep-daily 7 --keep-weekly 4 --keep-monthly 6 --prune
+
+      echo "Checking results..."
+      restic check
+
+
+secrets:
+  homeassistant-aws-access-key:
+    environment: HOMEASSISTANT_AWS_ACCESS_KEY
+
+  homeassistant-aws-secret-key:
+    environment: HOMEASSISTANT_AWS_SECRET_KEY
+
+  homeassistant-repository:
+    environment: HOMEASSISTANT_REPOSITORY
+
+  homeassistant-encryption-key:
+    environment: HOMEASSISTANT_ENCRYPTION_KEY

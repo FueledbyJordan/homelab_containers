@@ -1,0 +1,111 @@
+---
+services:
+  vmagent:
+    image: victoriametrics/vmagent:v1.128.0
+    depends_on:
+      - victoriametrics
+    configs:
+      - source: prometheus_vm_single_yml
+        target: /etc/prometheus.yml
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/vmagent:/vmagentdata:z
+    command:
+      - "--promscrape.config=/etc/prometheus.yml"
+      - "--remoteWrite.url=http://victoriametrics:8428/api/v1/write"
+    restart: always
+
+configs:
+  prometheus_vm_single_yml:
+    content: |
+      global:
+        scrape_interval: 10s
+      
+      scrape_configs:
+      - job_name: vmagent
+        static_configs:
+        - targets:
+          - vmagent:8429
+      - job_name: vmalert
+        static_configs:
+        - targets:
+          - vmalert:8880
+      - job_name: victoriametrics
+        static_configs:
+        - targets:
+          - victoriametrics:8428
+      - job_name: victorialogs
+        static_configs:
+        - targets:
+          - victorialogs:9428
+      - job_name: grafana
+        static_configs:
+        - targets:
+          - grafana:3000
+      - job_name: alloy
+        static_configs:
+        - targets:
+          - alloy:12345
+      - job_name: node-exporter
+        static_configs:
+        - targets:
+          - node-exporter:9100
+        relabel_configs:
+          - source_labels: [__address__]
+            regex: '.*'
+            target_label: instance
+            replacement: 'helium'
+      - job_name: cadvisor
+        static_configs:
+        - targets:
+          - cadvisor:8080
+        metric_relabel_configs:
+        - source_labels: ['container_label_com_docker_compose_service']
+          target_label: 'service'
+        - source_labels: ['name']
+          target_label: 'container'
+      - job_name: caddy
+        static_configs:
+        - targets:
+          - caddy:2019
+      - job_name: blackbox
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        http_sd_configs:
+          - url: 'http://caddy:2019/discovery/targets'
+          - url: 'http://caddy-private:2019/discovery/targets'
+        relabel_configs:
+          - source_labels: [__address__, __health_path__]
+            separator: "|"
+            regex: '([^/]+)\|(.*)'
+            replacement: 'https://$$1:443$$2'
+            target_label: __param_target
+          - source_labels: [__address__]
+            target_label: instance
+          - target_label: __address__
+            replacement: blackbox:9115
+          - source_labels: [__meta_service]
+            target_label: service
+          - target_label: job
+            replacement: blackbox
+          - target_label: __scheme__
+            replacement: http
+          - source_labels: [module]
+            regex: '(.+)'
+            target_label: __param_module
+          - source_labels: [__param_module]
+            regex: '^$'
+            replacement: 'http_2xx'
+            target_label: __param_module
+      - job_name: blackbox_exporter
+        static_configs:
+          - targets:
+            - blackbox:9115
+      - job_name: unpoller
+        static_configs:
+        - targets:
+          - unpoller:9130
+      - job_name: supercronic
+        static_configs:
+        - targets:
+          - supercronic:9746

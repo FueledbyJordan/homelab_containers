@@ -1,0 +1,98 @@
+---
+services:
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    configs:
+      - source: alertmanager_config
+        target: /etc/alertmanager.yml
+    secrets:
+      - source: alertmanager-user-key
+      - source: alertmanager-token
+    command:
+      - "--config.file=/etc/alertmanager.yml"
+      - '--web.external-url=https://alertmanager.${TAILNET}'
+    restart: always
+
+configs:
+  alertmanager_config:
+    content: |
+      global:
+        resolve_timeout: 5m
+
+      route:
+        receiver: 'null'
+        group_by: ['alertname', 'cluster', 'service']
+        group_wait: 10s
+        group_interval: 5m
+        repeat_interval: 12h
+
+        routes:
+          - match:
+              monitor: 'self'
+            receiver: 'deadman'
+            group_wait: 0s
+            group_interval: 1m
+            repeat_interval: 50s
+
+          - match:
+              severity: 'info'
+            receiver: 'null'
+
+          - match:
+              severity: 'warning'
+            receiver: 'pushover'
+            mute_time_intervals:
+              - maintenance_window
+              - sleeping_hours
+
+          - match:
+              severity: 'critical'
+            receiver: 'pushover'
+            mute_time_intervals:
+              - maintenance_window
+
+      mute_time_intervals:
+        - name: maintenance_window
+          time_intervals:
+            - times:
+                - start_time: '05:00'
+                  end_time: '06:00'
+              weekdays: ['monday:friday']
+              location: 'America/New_York'
+
+        - name: sleeping_hours
+          time_intervals:
+            - times:
+                - start_time: '21:00'
+                  end_time: '23:59'
+              location: 'America/New_York'
+            - times:
+                - start_time: '00:00'
+                  end_time: '09:00'
+              location: 'America/New_York'
+
+      receivers:
+        - name: 'null'
+
+        - name: deadman
+          webhook_configs:
+            - url: '$HEALTHCHECKS_IO_DEADMAN_URL'
+
+        - name: 'pushover'
+          pushover_configs:
+            - user_key_file: '/run/secrets/alertmanager-user-key'
+              token_file: '/run/secrets/alertmanager-token'
+              priority: '{{ if eq .CommonLabels.severity "critical" }}2{{ else }}0{{ end }}'
+              title: '{{ if eq .CommonLabels.severity "critical" }}🚨{{ else }}⚠️{{ end }} {{ .CommonLabels.alertname }}'
+              message: |
+                {{ range .Alerts }}
+                Severity: {{ .Labels.severity }}
+                Instance: {{ .Labels.instance }}
+                {{ .Annotations.summary }}
+                {{ end }}
+
+secrets:
+  alertmanager-user-key:
+    environment: PUSHOVER_USER_KEY
+  alertmanager-token:
+    environment: PUSHOVER_APP_TOKEN

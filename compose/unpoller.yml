@@ -1,0 +1,15 @@
+---
+
+services:
+  unpoller:
+    image: ghcr.io/unpoller/unpoller:latest
+    restart: always
+    environment:
+      UP_INFLUXDB_DISABLE: "true"
+      UP_UNIFI_DYNAMIC: "false"
+      UP_UNIFI_DEFAULT_SAVE_DPI: "false"
+      UP_PROMETHEUS_HTTP_LISTEN: 0.0.0.0:9130
+      UP_PROMETHEUS_NAMESPACE: unpoller
+      UP_UNIFI_DEFAULT_USER: "${UNIFI_POLLER_USERNAME}"
+      UP_UNIFI_DEFAULT_PASS: "${UNIFI_POLLER_PASSWORD}"
+      UP_UNIFI_DEFAULT_URL: "${UNIFI_POLLER_HOSTNAME}"

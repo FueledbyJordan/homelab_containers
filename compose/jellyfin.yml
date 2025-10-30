@@ -1,0 +1,13 @@
+---
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    restart: always
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: America/New_York
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/jellyfin:/config:z
+      - /var/nfs/Movies:/data/movies:z
+      - /var/nfs/TV:/data/tv:z

@@ -1,0 +1,15 @@
+---
+services:
+  victoriametrics:
+    image: victoriametrics/victoria-metrics:v1.128.0
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/victoriametrics:/storage:z
+    command:
+      - "--storageDataPath=/storage"
+      - "--vmalert.proxyURL=http://vmalert:8880"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8428/health"]
+      interval: 1s
+      timeout: 1s
+      retries: 10
+    restart: always

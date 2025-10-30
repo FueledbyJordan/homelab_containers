@@ -1,0 +1,23 @@
+include:
+  - compose/grafana.yml
+  - compose/alertmanager.yml
+  - compose/victoriametrics.yml
+  - compose/vmagent.yml
+  - compose/vmalert.yml
+  - compose/node-exporter.yml
+  - compose/cadvisor.yml
+  - compose/unpoller.yml
+  - compose/victorialogs.yml
+  - compose/alloy.yml
+  - compose/journal-forwarder.yml
+  - compose/jellyfin.yml
+  - compose/zwave-js-ui.yml
+  - compose/mosquitto.yml
+  - compose/home-assistant.yml
+  - compose/blackbox.yml
+  - compose/supercronic.yml
+
+  - compose/caddy.yml
+  - compose/tailscale.yml
+
+  - ../homelab_private/private.yml

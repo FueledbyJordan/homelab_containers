@@ -1,0 +1,26 @@
+#!/usr/bin/env -S ansible-playbook -i 'helium,'
+---
+- name: Set up homelab
+  hosts: all
+  become: yes
+  
+  vars:
+    homelab_rootdir: /var/home/core/homelab_containers
+  
+  tasks:
+    - name: Create directories with specific permissions and owners
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: directory
+        owner: "{{ item.owner }}"
+        group: "{{ item.group }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - path: "{{ homelab_rootdir }}"
+          owner: root
+          group: root
+          mode: '0755'
+        - path: "{{ homelab_rootdir }}/grafana"
+          owner: 472
+          group: root
+          mode: '0750'
