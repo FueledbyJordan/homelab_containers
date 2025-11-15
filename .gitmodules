@@ -1,0 +1,3 @@
+[submodule "homelab_containers_private"]
+	path = homelab_containers_private
+	url = git@github.com:FueledbyJordan/homelab_containers_private.git

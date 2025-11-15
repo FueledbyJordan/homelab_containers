@@ -20,4 +20,4 @@ include:
   - compose/caddy.yml
   - compose/tailscale.yml
 
-  - ../homelab_private/private.yml
+  - homelab_containers_private/private.yml
