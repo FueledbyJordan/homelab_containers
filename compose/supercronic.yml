@@ -3,6 +3,7 @@ services:
 
   supercronic:
     build: ../images/supercronic
+    container_name: supercronic
     restart: always
     depends_on:
       - homeassistant

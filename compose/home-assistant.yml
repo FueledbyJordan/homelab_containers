@@ -3,6 +3,7 @@
 services:
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
     restart: always
     volumes:
       - ${COMPOSE_ROOT_PATH}/homeassistant:/config:z

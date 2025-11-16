@@ -2,6 +2,7 @@
 services:
   victoriametrics:
     image: victoriametrics/victoria-metrics:v1.128.0
+    container_name: victoriametrics
     volumes:
       - ${COMPOSE_ROOT_PATH}/victoriametrics:/storage:z
     command:

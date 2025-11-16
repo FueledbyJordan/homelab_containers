@@ -25,34 +25,42 @@ services:
   tailscale-alertmanager:
     <<: *tailscale-serve
     hostname: alertmanager
+    container_name: tailscale-alertmanager
 
   tailscale-grafana:
     <<: *tailscale-serve
     hostname: grafana
+    container_name: tailscale-grafana
 
   tailscale-homeassistant:
     <<: *tailscale-serve
     hostname: homeassistant
+    container_name: tailscale-homeassistant
 
   tailscale-jellyfin:
     <<: *tailscale-serve
     hostname: jellyfin
+    container_name: tailscale-jellyfin
 
   tailscale-victorialogs:
     <<: *tailscale-serve
     hostname: victorialogs
+    container_name: tailscale-victorialogs
 
   tailscale-victoriametrics:
     <<: *tailscale-serve
     hostname: victoriametrics
+    container_name: tailscale-victoriametrics
 
   tailscale-vmalert:
     <<: *tailscale-serve
     hostname: vmalert
+    container_name: tailscale-vmalert
 
   tailscale-zwave:
     <<: *tailscale-serve
     hostname: zwave
+    container_name: tailscale-zwave
 
 configs:
   tailscale_serve_config:

@@ -1,6 +1,7 @@
 services:
   mosquitto:
     image: eclipse-mosquitto:latest
+    container_name: mosquitto
     restart: unless-stopped
     configs:
       - source: mosquitto_entrypoint

@@ -2,6 +2,7 @@
 services:
   vmalert:
     image: victoriametrics/vmalert:v1.128.0
+    container_name: vmalert
     depends_on:
       - victoriametrics
       - alertmanager

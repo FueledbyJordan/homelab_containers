@@ -3,6 +3,7 @@
 services:
   unpoller:
     image: ghcr.io/unpoller/unpoller:latest
+    container_name: unpoller
     restart: always
     environment:
       UP_INFLUXDB_DISABLE: "true"

@@ -2,6 +2,7 @@
 services:
   blackbox:
     image: quay.io/prometheus/blackbox-exporter:latest
+    container_name: blackbox
     restart: always
     configs:
       - source: blackbox_yml

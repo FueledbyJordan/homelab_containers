@@ -2,6 +2,7 @@
 services:
   vmagent:
     image: victoriametrics/vmagent:v1.128.0
+    container_name: vmagent
     depends_on:
       - victoriametrics
     configs:

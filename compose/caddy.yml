@@ -1,6 +1,7 @@
 services:
   caddy:
-    build: ../images/caddy
+    image: ghcr.io/fueledbyjordan/caddy:main@sha256:f83fa35881db83bed170d24bdfce8255550649d44e5bd37ef6988d3dca3298c1
+    container_name: caddy
     restart: always
     volumes:
       - ${COMPOSE_ROOT_PATH}/caddy:/data:z

@@ -3,6 +3,7 @@ services:
 
   victorialogs:
     image: victoriametrics/victoria-logs:v1.37.1
+    container_name: victorialogs
     restart: always
     command:
       - -storageDataPath=/vlogs

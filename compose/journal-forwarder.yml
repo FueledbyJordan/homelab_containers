@@ -3,6 +3,7 @@
 services:
   journal-forwarder:
     image: rockylinux:9
+    container_name: journal-forwarder
     privileged: true
     restart: always
     volumes:

@@ -3,6 +3,7 @@
 services:
   grafana:
     image: grafana/grafana-enterprise:latest
+    container_name: grafana
     restart: unless-stopped
     environment:
       GF_INSTALL_PLUGINS: grafana-clock-panel
@@ -19,6 +20,7 @@ services:
   # dashboards cannot be dynamically fetched and updated, so we need to manage this via terraform
   terraform-grafana:
     image: hashicorp/terraform:1.13
+    container_name: terraform-grafana
     restart: no
     depends_on:
       - grafana

@@ -2,6 +2,7 @@
 services:
   alertmanager:
     image: prom/alertmanager:v0.28.1
+    container_name: alertmanager
     configs:
       - source: alertmanager_config
         target: /etc/alertmanager.yml
