@@ -1,0 +1,55 @@
+---
+services:
+
+  jordanmurray_xyz:
+    image: ghcr.io/fueledbyjordan/jordanmurray_xyz:latest
+    restart: always
+    deploy:
+      replicas: 3
+    networks:
+      - cloudflare
+
+  jordanmurray_xyz_lb:
+    image: caddy:alpine
+    container_name: jordanmurray_xyz_lb
+    restart: always
+    command: caddy run --config /etc/Caddyfile
+    configs:
+      - source: jordanmurray_xyz_lb_caddyfile
+        target: /etc/Caddyfile
+    networks:
+      - cloudflare
+    depends_on:
+      - jordanmurray_xyz
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: always
+    command: tunnel run --token-file /run/secrets/tunnel_token
+    secrets:
+      - tunnel_token
+    networks:
+      - cloudflare
+    depends_on:
+      - caddy
+
+configs:
+  jordanmurray_xyz_lb_caddyfile:
+    content: |
+     :80 {
+      	reverse_proxy jordanmurray_xyz:9090 {
+      		lb_policy round_robin
+      		health_uri /
+      		health_interval 10s
+      		health_timeout 5s
+      	}
+      }
+  
+secrets:
+  tunnel_token:
+    environment: JORDANMURRAY_XYZ_CF_TUNNEL_TOKEN
+
+networks:
+  cloudflare:
+    driver: bridge

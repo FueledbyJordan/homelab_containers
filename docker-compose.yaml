@@ -20,4 +20,6 @@ include:
   - compose/caddy.yml
   - compose/tailscale.yml
 
+  - compose/jordanmurray_xyz.yml
+
   - homelab_containers_private/private.yml
