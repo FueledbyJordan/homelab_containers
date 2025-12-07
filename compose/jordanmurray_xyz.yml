@@ -2,20 +2,18 @@
 services:
 
   jordanmurray_xyz:
-    image: ghcr.io/fueledbyjordan/jordanmurray_xyz:latest
+    image: ghcr.io/fueledbyjordan/jordanmurray_xyz:2d3b98c 
     restart: always
-    deploy:
-      replicas: 3
     networks:
       - cloudflare
 
-  jordanmurray_xyz_lb:
+  jordanmurray_xyz_caddy:
     image: caddy:alpine
-    container_name: jordanmurray_xyz_lb
+    container_name: jordanmurray_xyz_caddy
     restart: always
     command: caddy run --config /etc/Caddyfile
     configs:
-      - source: jordanmurray_xyz_lb_caddyfile
+      - source: jordanmurray_xyz_caddyfile
         target: /etc/Caddyfile
     networks:
       - cloudflare
@@ -35,7 +33,7 @@ services:
       - caddy
 
 configs:
-  jordanmurray_xyz_lb_caddyfile:
+  jordanmurray_xyz_caddyfile:
     content: |
      :80 {
       	reverse_proxy jordanmurray_xyz:9090 {
