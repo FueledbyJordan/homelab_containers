@@ -38,7 +38,7 @@ configs:
      :80 {
       	reverse_proxy jordanmurray_xyz:9090 {
       		lb_policy round_robin
-      		health_uri /
+      		health_uri /health
       		health_interval 10s
       		health_timeout 5s
       	}
