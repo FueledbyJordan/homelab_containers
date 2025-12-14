@@ -2,7 +2,7 @@
 services:
 
   jordanmurray_xyz:
-    image: ghcr.io/fueledbyjordan/jordanmurray_xyz:2d3b98c 
+    image: ghcr.io/fueledbyjordan/jordanmurray_xyz:5b51d64
     restart: always
     networks:
       - cloudflare
