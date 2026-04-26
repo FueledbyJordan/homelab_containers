@@ -2,7 +2,7 @@
 
 services:
   unpoller:
-    image: ghcr.io/unpoller/unpoller:latest
+    image: ghcr.io/unpoller/unpoller:v2.39.0
     container_name: unpoller
     restart: always
     environment:
