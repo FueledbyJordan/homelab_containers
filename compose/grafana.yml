@@ -2,7 +2,7 @@
 
 services:
   grafana:
-    image: grafana/grafana-enterprise:latest
+    image: grafana/grafana-enterprise:13.1.0-24866141508
     container_name: grafana
     restart: unless-stopped
     environment:
@@ -19,7 +19,7 @@ services:
 
   # dashboards cannot be dynamically fetched and updated, so we need to manage this via terraform
   terraform-grafana:
-    image: hashicorp/terraform:1.13
+    image: hashicorp/terraform:1.14
     container_name: terraform-grafana
     restart: no
     depends_on:

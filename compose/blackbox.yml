@@ -1,7 +1,7 @@
 ---
 services:
   blackbox:
-    image: quay.io/prometheus/blackbox-exporter:latest
+    image: prom/blackbox-exporter:v0.28.0
     container_name: blackbox
     restart: always
     configs:
