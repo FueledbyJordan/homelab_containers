@@ -2,7 +2,7 @@
 services:
 
   supercronic:
-    image: ghcr.io/fueledbyjordan/supercronic:main@sha256:efb45c0d0bbb9ae3adb7ce690216f04b1d95aeca627335659327e63bbc7b39e6
+    image: ghcr.io/fueledbyjordan/supercronic:main@sha256:1bb97f122091faf37d53a203a269c1f3fba9900cc1804e950baa124f67ddc384
     container_name: supercronic
     restart: always
     depends_on:
