@@ -1,9 +1,42 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    "docker:enableMajor"
+  ],
   "baseBranchPatterns": ["main"],
   "rebaseWhen": "conflicted",
   "labels": ["dependencies"],
   "automergeStrategy": "merge-commit",
-  "prHourlyLimit": 2
+  "prHourlyLimit": 2,
+  "docker-compose": {
+    "fileMatch": ["(^|/)compose/.+\\.ya?ml$", "(^|/)private\\.ya?ml$"]
+  },
+  "packageRules": [
+    {
+      "description": "Group all linuxserver.io container updates together",
+      "matchDatasources": ["docker"],
+      "matchPackagePrefixes": ["linuxserver/"],
+      "groupName": "linuxserver.io containers",
+      "automerge": false
+    },
+    {
+      "description": "Separate major updates for manual review",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["major"],
+      "automerge": false,
+      "labels": ["dependencies", "major-update"]
+    },
+    {
+      "description": "Auto-merge minor and patch Docker updates",
+      "matchDatasources": ["docker"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
 }
