@@ -5,38 +5,63 @@
     ":dependencyDashboard",
     "docker:enableMajor"
   ],
-  "baseBranchPatterns": ["main"],
+  "baseBranchPatterns": [
+    "main"
+  ],
   "rebaseWhen": "conflicted",
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "automergeStrategy": "merge-commit",
   "prHourlyLimit": 2,
   "docker-compose": {
-    "fileMatch": ["(^|/)compose/.+\\.ya?ml$", "(^|/)private\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/(^|/)compose/.+\\.ya?ml$/",
+      "/(^|/)private\\.ya?ml$/"
+    ]
   },
   "packageRules": [
     {
       "description": "Group all linuxserver.io container updates together",
-      "matchDatasources": ["docker"],
-      "matchPackagePrefixes": ["linuxserver/"],
+      "matchDatasources": [
+        "docker"
+      ],
       "groupName": "linuxserver.io containers",
-      "automerge": false
+      "automerge": false,
+      "matchPackageNames": [
+        "linuxserver/{/,}**"
+      ]
     },
     {
       "description": "Separate major updates for manual review",
-      "matchDatasources": ["docker"],
-      "matchUpdateTypes": ["major"],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false,
-      "labels": ["dependencies", "major-update"]
+      "labels": [
+        "dependencies",
+        "major-update"
+      ]
     },
     {
       "description": "Auto-merge minor and patch Docker updates",
-      "matchDatasources": ["docker"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": false
     }
   ],
   "vulnerabilityAlerts": {
     "enabled": true,
-    "labels": ["security"]
+    "labels": [
+      "security"
+    ]
   }
 }
