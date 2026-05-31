@@ -46,7 +46,7 @@
             ansible-playbook bootstrap.yml -i "$INVENTORY,"
 
             echo "✅ Applying containers..."
-            op run --no-masking --env-file .secrets -- docker compose up -d
+            op run --no-masking --env-file .secrets --env-file homelab_containers_private/.secrets -- docker compose up -d
           '';
         };
       }
