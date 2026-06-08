@@ -7,6 +7,7 @@ services:
       - ${COMPOSE_ROOT_PATH}/victoriametrics:/storage:z
     command:
       - "--storageDataPath=/storage"
+      - "--retentionPeriod=6M"
       - "--vmalert.proxyURL=http://vmalert:8880"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8428/health"]
