@@ -1,0 +1,39 @@
+---
+
+services:
+  bookorbit:
+    image: ghcr.io/bookorbit/bookorbit:2.7.0
+    container_name: bookorbit
+    restart: unless-stopped
+    volumes:
+      - /var/nfs/Books:/books:z
+    environment:
+      APP_URL: https://bookorbit.${INTERNAL_DOMAIN_NAME}
+      POSTGRES_DB: ${BOOKORBIT_POSTGRES_DB}
+      POSTGRES_USER: ${BOOKORBIT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${BOOKORBIT_POSTGRES_PASSWORD}
+      JWT_SECRET: ${BOOKORBIT_JWT_SECRET}
+      SETUP_BOOTSTRAP_TOKEN: ${BOOKORBIT_SETUP_BOOTSTRAP_TOKEN}
+      BOOKS_HOST_PATH: /books
+    depends_on:
+       postgres:
+         condition: service_healthy
+
+  postgres:
+    container_name: bookorbit-db
+    image: pgvector/pgvector:pg18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${BOOKORBIT_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${BOOKORBIT_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${BOOKORBIT_POSTGRES_DB}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ${COMPOSE_ROOT_PATH}/bookorbit-postgres:/var/lib/postgresql/data:z
+    healthcheck:
+      test:
+        ["CMD-SHELL", 'pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s

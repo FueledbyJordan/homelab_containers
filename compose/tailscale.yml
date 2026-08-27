@@ -27,6 +27,11 @@ services:
     hostname: alertmanager
     container_name: tailscale-alertmanager
 
+  tailscale-bookorbit:
+    <<: *tailscale-serve
+    hostname: bookorbit
+    container_name: tailscale-bookorbit
+
   tailscale-grafana:
     <<: *tailscale-serve
     hostname: grafana

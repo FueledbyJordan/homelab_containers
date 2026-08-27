@@ -68,6 +68,11 @@ configs:
           import proxy_service jellyfin:8096
         }
 
+        @bookorbit host bookorbit.${INTERNAL_DOMAIN_NAME}
+        handle @bookorbit {
+          import proxy_service bookorbit:3000
+        }
+
         @victorialogs host victorialogs.${INTERNAL_DOMAIN_NAME}
         handle @victorialogs {
           import proxy_service victorialogs:9428
@@ -126,6 +131,7 @@ configs:
     
           map {header.X-Forwarded-Host} {backend} {
             ~^alertmanager.*\.ts\.net alertmanager:9093
+            ~^bookorbit.*\.ts\.net bookorbit:3000
             ~^jellyfin.*\.ts\.net jellyfin:8096
             ~^victorialogs.*\.ts\.net victorialogs:9428
             ~^victoriametrics.*\.ts\.net victoriametrics:8428
@@ -135,7 +141,7 @@ configs:
           }
     
           map {header.X-Forwarded-Host} {subdomain} {
-            ~^(vmalert|alertmanager|jellyfin|victorialogs|victoriametrics|zwave).*\.ts\.net $$1
+            ~^(vmalert|alertmanager|bookorbit|jellyfin|victorialogs|victoriametrics|zwave).*\.ts\.net $$1
             default ""
           }
 

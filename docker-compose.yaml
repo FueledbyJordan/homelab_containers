@@ -14,6 +14,7 @@ include:
   - compose/zwave-js-ui.yml
   - compose/mosquitto.yml
   - compose/home-assistant.yml
+  - compose/bookorbit.yml
   - compose/blackbox.yml
   - compose/supercronic.yml
 
