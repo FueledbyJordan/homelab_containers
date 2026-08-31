@@ -2,7 +2,7 @@
 
 services:
   bookorbit:
-    image: ghcr.io/bookorbit/bookorbit:2.7.0
+    image: ghcr.io/bookorbit/bookorbit:2.8.1
     container_name: bookorbit
     restart: unless-stopped
     volumes:
