@@ -12,3 +12,7 @@ services:
       - ${COMPOSE_ROOT_PATH}/jellyfin:/config:z
       - /var/nfs/Movies:/data/movies:z
       - /var/nfs/TV:/data/tv:z
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - 105
