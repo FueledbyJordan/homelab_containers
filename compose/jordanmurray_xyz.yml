@@ -21,7 +21,7 @@ services:
       - jordanmurray_xyz
 
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.9.3
     container_name: cloudflare-tunnel
     restart: always
     command: tunnel run --token-file /run/secrets/tunnel_token

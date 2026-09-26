@@ -9,7 +9,6 @@ include:
   - compose/unpoller.yml
   - compose/victorialogs.yml
   - compose/alloy.yml
-  - compose/journal-forwarder.yml
   - compose/jellyfin.yml
   - compose/zwave-js-ui.yml
   - compose/mosquitto.yml

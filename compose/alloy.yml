@@ -13,6 +13,9 @@ services:
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro,z
       - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log/journal:/var/log/journal:ro
+      - /run/log/journal:/run/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro
     command:
       - "run"
       - "--server.http.listen-addr=0.0.0.0:12345"
@@ -67,4 +70,27 @@ configs:
         host       = "unix:///var/run/docker.sock"
         targets    = discovery.relabel.default.output
         forward_to = [loki.write.default.receiver]
+      }
+
+      loki.relabel "journal" {
+        forward_to = []
+        rule {
+          source_labels = ["__journal__hostname"]
+          target_label  = "hostname"
+        }
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
+        }
+        rule {
+          source_labels = ["__journal__pid"]
+          target_label  = "pid"
+        }
+      }
+
+      loki.source.journal "journal" {
+        path          = "/var/log/journal"
+        relabel_rules = loki.relabel.journal.rules
+        forward_to    = [loki.write.default.receiver]
+        labels        = { job = "systemd-journal" }
       }

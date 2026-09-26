@@ -1,7 +1,8 @@
 ---
+
 services:
   alertmanager:
-    image: prom/alertmanager:v0.34.0
+    image: prom/alertmanager:v0.34.1
     container_name: alertmanager
     configs:
       - source: alertmanager_config
@@ -77,7 +78,7 @@ configs:
 
         - name: deadman
           webhook_configs:
-            - url: '$HEALTHCHECKS_IO_DEADMAN_URL'
+            - url: '${HEALTHCHECKS_IO_DEADMAN_URL}'
 
         - name: 'pushover'
           pushover_configs:
