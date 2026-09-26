@@ -22,7 +22,7 @@ services:
       "
     depends_on:
       victorialogs:
-        condition: service_healthy
+        condition: service_started
 
 configs:
   journal-upload-conf:
