@@ -20,9 +20,9 @@ services:
       - "/etc/config.alloy"
     depends_on:
       victorialogs:
-        condition: service_healthy
+        condition: service_started
       victoriametrics:
-        condition: service_healthy
+        condition: service_started
     security_opt:
       - label=disable
 
