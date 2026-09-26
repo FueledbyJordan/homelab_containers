@@ -63,7 +63,7 @@ configs:
 
       loki.write "default" {
         endpoint {
-          headers = { "VL-Msg-Field" = "msg", "VL-Stream-Fields" = "container_name" }
+          headers = { "VL-Msg-Field" = "msg", "VL-Stream-Fields" = "container_name,job,hostname" }
           url = "http://victorialogs:9428/insert/loki/api/v1/push"
         }
       }
@@ -76,6 +76,10 @@ configs:
 
       loki.relabel "journal" {
         forward_to = []
+        rule {
+          target_label = "job"
+          replacement  = "systemd-journal"
+        }
         rule {
           source_labels = ["__journal__hostname"]
           target_label  = "hostname"
@@ -94,5 +98,4 @@ configs:
         path          = "/var/log/journal"
         relabel_rules = loki.relabel.journal.rules
         forward_to    = [loki.write.default.receiver]
-        labels        = { job = "systemd-journal" }
       }
