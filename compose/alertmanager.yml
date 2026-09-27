@@ -12,7 +12,7 @@ services:
       - source: alertmanager-token
     command:
       - "--config.file=/etc/alertmanager.yml"
-      - '--web.external-url=https://alertmanager.${TAILNET}'
+      - '--web.external-url=https://alertmanager.${INTERNAL_DOMAIN_NAME}'
     restart: always
 
 configs:
