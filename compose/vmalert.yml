@@ -1022,7 +1022,7 @@ configs:
 
         - alert: BlackboxProbeFailed
           expr: probe_success == 0
-          for: 0m
+          for: 30s
           labels:
             severity: critical
           annotations:

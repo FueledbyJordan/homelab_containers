@@ -84,7 +84,9 @@ configs:
           pushover_configs:
             - user_key_file: '/run/secrets/alertmanager-user-key'
               token_file: '/run/secrets/alertmanager-token'
-              priority: '{{ if eq .CommonLabels.severity "critical" }}2{{ else }}0{{ end }}'
+              priority: '{{ if eq .CommonLabels.severity "critical" }}1{{ else }}0{{ end }}'
+              retry: 5m
+              expire: 60m
               title: '{{ if eq .CommonLabels.severity "critical" }}🚨{{ else }}⚠️{{ end }} {{ .CommonLabels.alertname }}'
               message: |
                 {{ range .Alerts }}
