@@ -29,7 +29,7 @@ services:
       - "--remoteWrite.url=http://vmagent:8429/"
       - "--notifier.url=http://alertmanager:9093/"
       - "--rule=/etc/alerts-*.yml"
-      - "--external.url=https://grafana.${TAILNET}"
+      - "--external.url=https://grafana.${INTERNAL_DOMAIN_NAME}"
       - '--external.alert.source=explore?orgId=1&left={"datasource":"VictoriaMetrics","queries":[{"expr":{{.Expr|jsonEscape|queryEscape}},"refId":"A"}],"range":{"from":"{{ .ActiveAt.UnixMilli }}","to":"now"}}'
     restart: always
 
@@ -66,7 +66,7 @@ configs:
               labels:
                 severity: critical
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/wNf0q_kZk?viewPanel=53&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/wNf0q_kZk?viewPanel=53&var-instance={{ $$labels.instance }}"
                 summary: "Instance {{ $$labels.instance }} will run out of disk space soon"
                 description: "Taking into account current ingestion rate, free disk space will be enough only
                   for {{ $$value | humanizeDuration }} on instance {{ $$labels.instance }}.\n
@@ -90,7 +90,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/oS7Bi_0Wz?viewPanel=53&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/oS7Bi_0Wz?viewPanel=53&var-instance={{ $$labels.instance }}"
                 summary: "Instance {{ $$labels.instance }} will become read-only in 3 days"
                 description: "Taking into account current ingestion rate and free disk space
                     instance {{ $$labels.instance }} is writable for {{ $$value | humanizeDuration }}.\n
@@ -107,7 +107,7 @@ configs:
               labels:
                 severity: critical
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/wNf0q_kZk?viewPanel=53&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/wNf0q_kZk?viewPanel=53&var-instance={{ $$labels.instance }}"
                 summary: "Instance {{ $$labels.instance }} (job={{ $$labels.job }}) will run out of disk space soon"
                 description: "Disk utilisation on instance {{ $$labels.instance }} is more than 80%.\n
                   Having less than 20% of free disk space could cripple merge processes and overall performance.
@@ -119,7 +119,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/wNf0q_kZk?viewPanel=35&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/wNf0q_kZk?viewPanel=35&var-instance={{ $$labels.instance }}"
                 summary: "Too many errors served for path {{ $$labels.path }} (instance {{ $$labels.instance }})"
                 description: "Requests to path {{ $$labels.path }} are receiving errors.
                   Please verify if clients are sending correct requests."
@@ -135,7 +135,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/wNf0q_kZk?viewPanel=66&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/wNf0q_kZk?viewPanel=66&var-instance={{ $$labels.instance }}"
                 summary: "Churn rate is more than 10% on \"{{ $$labels.instance }}\" for the last 15m"
                 description: "VM constantly creates new time series on \"{{ $$labels.instance }}\".\n
                   This effect is known as Churn Rate.\n
@@ -151,7 +151,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/wNf0q_kZk?viewPanel=66&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/wNf0q_kZk?viewPanel=66&var-instance={{ $$labels.instance }}"
                 summary: "Too high number of new series on \"{{ $$labels.instance }}\" created over last 24h"
                 description: "The number of created new time series over last 24h is 3x times higher than
                   current number of active series on \"{{ $$labels.instance }}\".\n
@@ -170,7 +170,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/wNf0q_kZk?viewPanel=68&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/wNf0q_kZk?viewPanel=68&var-instance={{ $$labels.instance }}"
                 summary: "Percentage of slow inserts is more than 5% on \"{{ $$labels.instance }}\" for the last 15m"
                 description: "High rate of slow inserts on \"{{ $$labels.instance }}\" may be a sign of resource exhaustion
                   for the current load. It is likely more RAM is needed for optimal handling of the current number of active time series.
@@ -349,7 +349,7 @@ configs:
               labels:
                 severity: critical
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=49&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=49&var-instance={{ $$labels.instance }}"
                 summary: "Instance {{ $$labels.instance }} is dropping data from persistent queue"
                 description: "Vmagent dropped {{ $$value | humanize1024 }} from persistent queue
                     on instance {{ $$labels.instance }} for the last 10m."
@@ -360,7 +360,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=79&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=79&var-instance={{ $$labels.instance }}"
                 summary: "Vmagent is dropping data blocks that are rejected by remote storage"
                 description: "Job \"{{ $$labels.job }}\" on instance {{ $$labels.instance }} drops the rejected by 
                   remote-write server data blocks. Check the logs to find the reason for rejects."
@@ -371,7 +371,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=31&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=31&var-instance={{ $$labels.instance }}"
                 summary: "Vmagent fails to scrape one or more targets"
                 description: "Job \"{{ $$labels.job }}\" on instance {{ $$labels.instance }} fails to scrape targets for last 15m"
       
@@ -395,7 +395,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=77&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=77&var-instance={{ $$labels.instance }}"
                 summary: "Vmagent responds with too many errors on data ingestion protocols"
                 description: "Job \"{{ $$labels.job }}\" on instance {{ $$labels.instance }} responds with errors to write requests for last 15m."
       
@@ -405,7 +405,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=61&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=61&var-instance={{ $$labels.instance }}"
                 summary: "Job \"{{ $$labels.job }}\" on instance {{ $$labels.instance }} fails to push to remote storage"
                 description: "Vmagent fails to push data via remote write protocol to destination \"{{ $$labels.url }}\"\n
                   Ensure that destination is up and reachable."
@@ -421,7 +421,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=84&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=84&var-instance={{ $$labels.instance }}"
                 summary: "Remote write connection from \"{{ $$labels.job }}\" (instance {{ $$labels.instance }}) to {{ $$labels.url }} is saturated"
                 description: "The remote write connection between vmagent \"{{ $$labels.job }}\" (instance {{ $$labels.instance }}) and destination \"{{ $$labels.url }}\"
                   is saturated by more than 90% and vmagent won't be able to keep up.\n
@@ -435,7 +435,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=98&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=98&var-instance={{ $$labels.instance }}"
                 summary: "Persistent queue writes for instance {{ $$labels.instance }} are saturated"
                 description: "Persistent queue writes for vmagent \"{{ $$labels.job }}\" (instance {{ $$labels.instance }})
                   are saturated by more than 90% and vmagent won't be able to keep up with flushing data on disk. 
@@ -447,7 +447,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=99&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=99&var-instance={{ $$labels.instance }}"
                 summary: "Persistent queue reads for instance {{ $$labels.instance }} are saturated"
                 description: "Persistent queue reads for vmagent \"{{ $$labels.job }}\" (instance {{ $$labels.instance }})
                   are saturated by more than 90% and vmagent won't be able to keep up with reading data from the disk. 
@@ -458,7 +458,7 @@ configs:
               labels:
                 severity: critical
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=88&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=88&var-instance={{ $$labels.instance }}"
                 summary: "Instance {{ $$labels.instance }} reached 90% of the limit"
                 description: "Max series limit set via -remoteWrite.maxHourlySeries flag is close to reaching the max value. 
                   Then samples for new time series will be dropped instead of sending them to remote storage systems."
@@ -468,7 +468,7 @@ configs:
               labels:
                 severity: critical
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/G7Z9GzMGz?viewPanel=90&var-instance={{ $$labels.instance }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/G7Z9GzMGz?viewPanel=90&var-instance={{ $$labels.instance }}"
                 summary: "Instance {{ $$labels.instance }} reached 90% of the limit"
                 description: "Max series limit set via -remoteWrite.maxDailySeries flag is close to reaching the max value. 
                   Then samples for new time series will be dropped instead of sending them to remote storage systems."
@@ -483,7 +483,7 @@ configs:
               annotations:
                 summary: "Configuration reload failed for vmagent instance {{ $$labels.instance }}"
                 description: "Configuration hot-reload failed for vmagent on instance {{ $$labels.instance }}.
-                Check vmagent's logs for detailed error message."
+                Check vmagent's logs for INTERNAL_DOMAIN_NAME error message."
       
             - alert: StreamAggrFlushTimeout
               expr: |
@@ -533,7 +533,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/LzldHAVnz?viewPanel=13&var-instance={{ $$labels.instance }}&var-file={{ $$labels.file }}&var-group={{ $$labels.group }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/LzldHAVnz?viewPanel=13&var-instance={{ $$labels.instance }}&var-file={{ $$labels.file }}&var-group={{ $$labels.group }}"
                 summary: "Alerting rules are failing for vmalert instance {{ $$labels.instance }}"
                 description: "Alerting rules execution is failing for \"{{ $$labels.alertname }}\" from group \"{{ $$labels.group }}\" in file \"{{ $$labels.file }}\".
                   Check vmalert's logs for detailed error message."
@@ -544,7 +544,7 @@ configs:
               labels:
                 severity: warning
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/LzldHAVnz?viewPanel=30&var-instance={{ $$labels.instance }}&var-file={{ $$labels.file }}&var-group={{ $$labels.group }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/LzldHAVnz?viewPanel=30&var-instance={{ $$labels.instance }}&var-file={{ $$labels.file }}&var-group={{ $$labels.group }}"
                 summary: "Recording rules are failing for vmalert instance {{ $$labels.instance }}"
                 description: "Recording rules execution is failing for \"{{ $$labels.recording }}\" from group \"{{ $$labels.group }}\" in file \"{{ $$labels.file }}\".
                   Check vmalert's logs for detailed error message."
@@ -555,7 +555,7 @@ configs:
               labels:
                 severity: info
               annotations:
-                dashboard: "https://grafana.${TAILNET}/d/LzldHAVnz?viewPanel=33&var-file={{ $$labels.file }}&var-group={{ $$labels.group }}"
+                dashboard: "https://grafana.${INTERNAL_DOMAIN_NAME}/d/LzldHAVnz?viewPanel=33&var-file={{ $$labels.file }}&var-group={{ $$labels.group }}"
                 summary: "Recording rule {{ $$labels.recording }} ({{ $$labels.group }}) produces no data"
                 description: "Recording rule \"{{ $$labels.recording }}\" from group \"{{ $$labels.group }}\ in file \"{{ $$labels.file }}\" 
                   produces 0 samples over the last 30min. It might be caused by a misconfiguration 
