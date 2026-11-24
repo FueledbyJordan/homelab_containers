@@ -1,6 +1,6 @@
 services:
   caddy:
-    image: ghcr.io/fueledbyjordan/caddy:main@sha256:6dcb0729d04eae7dee7ca89466275514c5b68149f4dac112e5801b537f15bae0
+    image: ghcr.io/fueledbyjordan/caddy:main@sha256:708fc2abcf236fc360f1b01e903564dbcff25fa66977a99c8c5518bff2b1e962
     container_name: caddy
     restart: always
     volumes:
